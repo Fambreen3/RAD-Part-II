@@ -1,0 +1,37 @@
+public class WeekTwoHW {
+    // a. Print out Contact Name with its Account Name    
+    public static void childToParent(){
+        List<Contact> ContactwithAccounts = [
+            SELECT ID, FirstName, LastName, Account.Name, Account.Industry From Contact
+        ];
+        for (Contact cont : ContactwithAccounts) {
+            System.debug('The Contact Account Name for '+ 
+                         cont.firstname + ' ' + cont.LastName + ' is ' + cont.Account.Name);   
+        }
+    }
+    
+    //b. Print out List of Accounts with Opportunities
+    public static void parentToChildren(){
+        List<Account> AccountwithOppor = [
+            SELECT ID , Name, (Select Name from Opportunities where IsWon = True) Opp From Account];
+        
+        for (Account acc : AccountwithOppor){
+            System.debug('The Account Name ' + acc.Name + ' has Closed Won Opporutinities ' + acc.Opportunities);
+        }
+    }
+    //c. Print out opportunities as Map
+    public static Map<Id, Opportunity> opportunityMap() {
+        Map<Id, Opportunity> opportunities = new Map<ID, Opportunity>([Select Id, Name From Opportunity]);
+        
+        System.debug('Opportnity IDs and Names: '+ opportunities);        
+        
+        return opportunities;
+    }
+    
+    //d. Print the number of Closed Won Opportunities
+    public static Integer countOppor(){
+        Integer NumberofOpportunities = [Select count() from Opportunity where IsWon = true];
+        System.Debug('The number of Closed Won opportunities is ' + NumberofOpportunities);
+        return NumberofOpportunities;
+    }    
+}
