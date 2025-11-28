@@ -6,13 +6,16 @@ public with sharing class LeadTriggerHandler
             
         {
             Task t = new Task();
-            t.Subject = 'Follow up with this Lead!';
-            t.WhatId = l.Id;
+            t.Subject = 'Follow up with ' + l.FirstName + ' ' + l.LastName + ' ' + 'Lead!';
+            t.WhoId = l.Id;
             t.OwnerId = l.OwnerId ;
             t.Priority = 'Normal';
             t.Status = 'Not Started';
-            t.Description = 'Please follow up this Lead with ' + l.ProductInterest__c + 'It is Qualified' ;
+            t.Description = 'Please follow up this Lead with Product Interest: ' + l.ProductInterest__c + '.';
+           
+            NewTasks.add(t);
         }
+        insert NewTasks;
     }
     
 
@@ -26,15 +29,16 @@ public static void createTaskAfterUpdate(List<Lead> newLeads, Map<Id, Lead> oldL
         if (l.ProductInterest__c != oldLead.ProductInterest__c)
         {
             Task t = new Task();
-            t.Subject = 'Follow up with this Lead!';
-            t.WhatId = l.Id;
+            t.Subject = 'Follow up with ' + l.FirstName + ' ' + l.LastName + ' ' + 'Lead!';
+            t.WhoId = l.Id;
             t.OwnerId = l.OwnerId ;
             t.Priority = 'Normal';
             t.Status = 'Not Started';
-            t.Description = 'Please follow up this Lead with ' + l.ProductInterest__c + 'It is Qualified' ;
+            t.Description = 'Please follow up this Lead with Product Interest: ' + l.ProductInterest__c + '.' ;
             
             Newtasks.add(t);
         }
+        insert Newtasks;
     }
 }
 }
