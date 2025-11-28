@@ -1,0 +1,63 @@
+public with sharing class RecipeTriggerHandler {
+    // loop through new and updated recipe and checking key values are missing, if any value is missing, 
+    // check the field Draft__c to true
+    public static void DraftCheck(List<Recipe__c> NewOrUpdatesRecipes){
+        for(Recipe__c checkRecipe : NewOrUpdatesRecipes){
+        	if(checkRecipe.Name == null || 
+           	   checkRecipe.Active_Time__c == null ||
+           	   checkRecipe.Description__c == null ||
+           	   checkRecipe.Active_Time_Units__c == null ||
+           	   checkRecipe.Servings__c == null)
+               checkRecipe.Draft__c = true;
+        }}
+    public static void RecipeComplexity(List<Recipe__c> NewOrUpdatedRecipes) {
+        for(Recipe__c rateRecipe : NewOrUpdatedRecipes){
+        Integer ComplexityRate;
+        ComplexityRate = HelperFunctions.rateRecipeComplexity(rateRecipe);
+            if (ComplexityRate == 3)
+                rateRecipe.Complexity__c ='Difficult';
+            else if (ComplexityRate == 2)
+                rateRecipe.Complexity__c ='Moderate';
+            else if (ComplexityRate == 1)
+                rateRecipe.Complexity__c ='Simple';
+        }
+    }
+        public static void CheckCompletedRecipe(List<Recipe__c> NewOrUpdatedRecipes){
+            List<Recipe__c> completedRecipe = new List<Recipe__c>() ;
+            // loop through review recipes and add in the completed recipes which are not draft 
+            for (Recipe__c reviewRecipe : NewOrUpdatedRecipes ){
+                if (reviewRecipe.Draft__c == false)
+                    completedRecipe.add(reviewRecipe);
+            }
+       // list for recipe usage records updated non draft recipes     
+       List<Recipe_Usage__c> recipeUsageList = [SELECT Id, Cookbook__c, Cookbook__r.OwnerId, Recipe__c, Cookbook__r.Name FROM Recipe_Usage__c WHERE Recipe__c IN :completedRecipe ORDER BY Cookbook__c ASC];
+      
+       //list to hold the deduplicated recipe usage records so that only one task per cookbook is made
+        List<Recipe_Usage__c> dedupedRecipeUsageList = new List <Recipe_Usage__c>();
+       
+       // string to put priorcookbookname
+       String priorCookbook;
+            
+       for (Recipe_Usage__c reviewRecipeUsage : recipeUsageList)
+       {
+           if(priorCookbook != reviewRecipeUsage.Cookbook__c){
+            dedupedRecipeUsageList.add(reviewRecipeUsage);
+			priorCookbook = reviewRecipeUsage.Cookbook__c ;
+            System.debug('Cookbook Value = ' + priorCookbook);
+           }
+       }
+     // Create and insert Tasks 
+     List<Task> CreateTasks = new List<Task>();
+            for (Recipe_Usage__c TasksforCookBook : dedupedRecipeUsageList){
+                Task newTask = new Task();
+                newTask.WhatId = TasksforCookBook.Cookbook__r.id;
+                newTask.OwnerId = TasksforCookBook.Cookbook__r.Ownerid;
+                newTask.Subject = 'Review' + TasksforCookBook.Cookbook__r.Name + 'CookBook';
+                CreateTasks.add(newTask);
+            }
+            // create all tasks
+            insert CreateTasks;
+        } 
+
+
+   }
