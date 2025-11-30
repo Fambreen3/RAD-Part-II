@@ -30,34 +30,33 @@ public with sharing class RecipeTriggerHandler {
                     completedRecipe.add(reviewRecipe);
             }
        // list for recipe usage records updated non draft recipes     
-       List<Recipe_Usage__c> recipeUsageList = [SELECT Id, Cookbook__c, Cookbook__r.OwnerId, Recipe__c, Cookbook__r.Name FROM Recipe_Usage__c WHERE Recipe__c IN :completedRecipe ORDER BY Cookbook__c ASC];
+        List<Recipe_Usage__c> recipeUsageList = [SELECT Id, Cookbook__c, Cookbook__r.OwnerId, Recipe__c, Cookbook__r.Name FROM Recipe_Usage__c WHERE Recipe__c IN :completedRecipe ORDER BY Cookbook__c ASC];
       
        //list to hold the deduplicated recipe usage records so that only one task per cookbook is made
-        List<Recipe_Usage__c> dedupedRecipeUsageList = new List <Recipe_Usage__c>();
+        List<Recipe_Usage__c> dedupedRecipeUsageList = new List<Recipe_Usage__c>();
        
        // string to put priorcookbookname
        String priorCookbook;
             
        for (Recipe_Usage__c reviewRecipeUsage : recipeUsageList)
        {
-           if(priorCookbook != reviewRecipeUsage.Cookbook__c){
+           if(priorCookbook != reviewRecipeUsage.Cookbook__c)
+           {
             dedupedRecipeUsageList.add(reviewRecipeUsage);
 			priorCookbook = reviewRecipeUsage.Cookbook__c ;
             System.debug('Cookbook Value = ' + priorCookbook);
            }
        }
-     // Create and insert Tasks 
      List<Task> CreateTasks = new List<Task>();
-            for (Recipe_Usage__c TasksforCookBook : dedupedRecipeUsageList){
+          for (Recipe_Usage__c TasksforCookBook : dedupedRecipeUsageList)
+            {
                 Task newTask = new Task();
-                newTask.WhatId = TasksforCookBook.Cookbook__r.id;
+                newTask.Whatid = TasksforCookBook.Cookbook__r.id;
                 newTask.OwnerId = TasksforCookBook.Cookbook__r.Ownerid;
-                newTask.Subject = 'Review' + TasksforCookBook.Cookbook__r.Name + 'CookBook';
+                newTask.Subject = 'Review' + ' ' + TasksforCookBook.Cookbook__r.Name + ' ' + 'CookBook';
                 CreateTasks.add(newTask);
             }
             // create all tasks
             insert CreateTasks;
         } 
-
-
    }
